@@ -204,13 +204,21 @@
       }
     }
 
-    // Define brick types with icons (use base64-encoded images or placeholders)
-    const brickTypes = [
-      { name: "Standard", size: [1, 0.5, 1], color: 0x0077ff, cost: 10, icon: "https://via.placeholder.com/40/0077ff/ffffff?text=1" },
-      { name: "Large", size: [2, 1, 2], color: 0xff0000, cost: 25, icon: "https://via.placeholder.com/40/ff0000/ffffff?text=2" },
-      { name: "Small", size: [0.5, 0.25, 0.5], color: 0x00ff00, cost: 5, icon: "https://via.placeholder.com/40/00ff00/ffffff?text=3" },
-      { name: "Special", size: [1, 0.5, 1], color: 0xffff00, cost: 50, icon: "https://via.placeholder.com/40/ffff00/ffffff?text=4" }
-    ];
+// Define brick types with icons (use base64-encoded images or placeholders)
+  const brickTypes = [
+    { name: "block1", size: [1, 1, .5], color: 0x0077ff, cost: 10, icon: "https://via.placeholder.com/40/0077ff/ffffff?text=1" },
+    { name: "block2", size: [1, 1, 1], color: 0x0077ff, cost: 25, icon: "https://via.placeholder.com/40/ff0000/ffffff?text=2" },
+    { name: "block3", size: [1, 1, 2], color: 0x0077ff, cost: 5, icon: "https://via.placeholder.com/40/00ff00/ffffff?text=3" },
+    { name: "block4", size: [1, 1, 4], color: 0x0077ff, cost: 50, icon: "https://via.placeholder.com/40/ffff00/ffffff?text=4" },
+   { name: "block5", size: [1, 1, 8], color: 0x0077ff, cost: 10, icon: "https://via.placeholder.com/40/0077ff/ffffff?text=5" },
+    { name: "block6", size: [2, 2, 1], color: 0x0077ff, cost: 25, icon: "https://via.placeholder.com/40/ff0000/ffffff?text=6" },
+    { name: "block7", size: [4, 4, 1], color: 0x0077ff, cost: 5, icon: "https://via.placeholder.com/40/00ff00/ffffff?text=7" },
+    { name: "block8", size: [8, 8, 1], color: 0x0077ff, cost: 50, icon: "https://via.placeholder.com/40/ffff00/ffffff?text=8" },
+   { name: "block9", size: [2, 1, 2], color: 0x0077ff, cost: 10, icon: "https://via.placeholder.com/40/0077ff/ffffff?text=9" },
+    { name: "block0", size: [4, 1, 4], color: 0x0077ff, cost: 25, icon: "https://via.placeholder.com/40/ff0000/ffffff?text=10" },
+    { name: "11", size: [8, 1, 8], color: 0x0077ff, cost: 5, icon: "https://via.placeholder.com/40/00ff00/ffffff?text=11" },
+    { name: "12", size: [4, 4, 4], color: 0x0077ff, cost: 50, icon: "https://via.placeholder.com/40/ffff00/ffffff?text=12" }
+  ];
 
     // Place brick on Spacebar key press
     window.addEventListener('keydown', function (event) {
