@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hash World - Build Your World</title>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; background-color: #1a1a1a; }
+    canvas { display: block; }
+    .ui { position: absolute; top: 20px; left: 20px; color: white; z-index: 1; display: flex; flex-direction: column; }
+    .button { background-color: rgba(0, 0, 0, 0.5); color: white; padding: 10px; margin: 5px; border-radius: 5px; cursor: pointer; }
+    .button:hover { background-color: rgba(0, 0, 0, 0.7); }
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; align-items: center; justify-content: center; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 10px; width: 300px; text-align: center; }
+    .modal .button { margin-top: 10px; background-color: rgba(0, 0, 0, 0.7); color: white; }
+    /* Inventory Styles */
+    .inventory { 
+      display: grid; 
+      grid-template-columns: repeat(6, 60px); /* 6 columns */
+      grid-gap: 10px; 
+      margin-top: 10px;
+      overflow-y: auto;
+      max-height: 300px; /* Limit the height */
+    }
+    .inventory-item {
+      background-color: rgba(0, 0, 0, 0.6); 
+      border: 2px solid #444;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.2s;
+    }
+    .inventory-item:hover {
+      transform: scale(1.1);
+      background-color: rgba(0, 0, 0, 0.8);
+    }
+    .inventory-item.selected {
+      background-color: rgba(0, 255, 0, 0.5); /* Highlight selected item */
+      border-color: #00ff00;
+    }
+    .inventory-item img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+    .inventory-item:empty {
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+    /* Bottom UI */
+    #hash-display { font-size: 18px; margin-top: 10px; }
+    /* Scrollbar for inventory */
+    .inventory::-webkit-scrollbar {
+      width: 6px;
+    }
+    .inventory::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Load Three.js -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+
+<!-- Load OrbitControls -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<!-- Load Stats.js from a different CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/16/Stats.min.js"></script>
+
+<script>
+  // Scene Setup
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // Lighting Setup
+  const light = new THREE.AmbientLight(0x404040); // Ambient light
+  scene.add(light);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+  directionalLight.position.set(5, 5, 5).normalize();
+  scene.add(directionalLight);
+
+  // Create the ground
+  const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
+  const groundMaterial = new THREE.MeshPhongMaterial({ color: 0x00aa00, flatShading: true });
+  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+  ground.rotation.x = -Math.PI / 2;
+  scene.add(ground);
+
+  // Create Grid Helper
+  const gridHelper = new THREE.GridHelper(100, 20);
+  gridHelper.position.y = 0.01;
+  scene.add(gridHelper);
+
+  // Define brick types with icons (use base64-encoded images or placeholders)
+  const brickTypes = [
+    { name: "block1", size: [.5, 0.5, .5], color: 0x0077ff, cost: 10, icon: "https://via.placeholder.com/40/0077ff/ffffff?text=1" },
+    { name: "block2", size: [1, 1, 1], color: 0x0077ff, cost: 25, icon: "https://via.placeholder.com/40/ff0000/ffffff?text=2" },
+    { name: "block3", size: [0.5, 1, 0.5], color: 0x0077ff, cost: 5, icon: "https://via.placeholder.com/40/00ff00/ffffff?text=3" },
+    { name: "block4", size: [1, 0.5, 1], color: 0x0077ff, cost: 50, icon: "https://via.placeholder.com/40/ffff00/ffffff?text=4" }
+  ];
+
+  let hashBalance = 10000000; // Starting HASH balance
+  let inventory = []; // User's inventory to store purchased bricks
+  let selectedBrick = null; // Selected brick for placement
+  let floatingBrick = null; // Brick floating above the ground
+  let placedBricks = []; // Store placed bricks
+
+  // Function to create a brick mesh
+  function createBrick(type) {
+    const geometry = new THREE.BoxGeometry(...brickTypes[type].size);
+    const material = new THREE.MeshPhongMaterial({ color: brickTypes[type].color });
+    const brick = new THREE.Mesh(geometry, material);
+    return brick;
+  }
+
+  // Handle mouse movement (for raycasting)
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+
+  function onMouseMove(event) {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  }
+  window.addEventListener('mousemove', onMouseMove, false);
+
+  // Update floating brick position based on mouse location
+  function updateFloatingBrick() {
+    if (floatingBrick) {
+ scene.add(floatingBrick);      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(ground);
+
+      if (intersects.length > 0) {
+        const intersection = intersects[0];
+        let position = intersection.point;
+
+
+
+  
+  // Check if there are bricks already placed
+  for (let brick of placedBricks) {
+    if (Math.abs(brick.position.x - position.x) < 1 && Math.abs(brick.position.z - position.z) < 1) {
+      position.y = brick.position.y + 0.25; // Stack on top of the last brick
+      break;
+    }
+  }
+  // Function to place a new brick
+function placeBrick(position) {
+  position.y = 0.25; // Set it above the ground initially
+  // Place the brick by adding it to the placedBricks array
+  placedBricks.push({ position: position });
+  console.log("Brick placed at", position);
+}
+
+    for (let brick of placedBricks) {
+    if (Math.abs(brick.position.x - position.x) < 2 && Math.abs(brick.position.y - position.y) < 2) {
+      position.y = brick.position.y + .75; // Stack on top of the last brick
+      break;
+    }
+  }
+// Function to place a new brick
+function placeBrick(position) {
+  position.y = 0.5; // Set it above the ground initially
+  // Place the brick by adding it to the placedBricks array
+  placedBricks.push({ position: position });
+  console.log("Brick placed at", position);
+}
+
+// Example usage
+placeBrick({ y: 0, z: 0 });  // Place the first brick at (0, 0)
+placeBrick({ y: 1, z: 0 });  // Place another brick
+
+
+
+        floatingBrick.position.set(Math.floor(position.x), position.y, Math.floor(position.z));
+      }
+    }
+  }
+
+  // Place brick on "B" key press
+  window.addEventListener('keydown', function (event) {
+    if (event.key === 'b' || event.key === 'B') {
+      if (floatingBrick && selectedBrick !== null) {
+        // Place the brick in the world
+        scene.add(floatingBrick);
+        placedBricks.push(floatingBrick); // Add it to placed bricks
+        inventory.splice(inventory.indexOf(selectedBrick), 1); // Remove from inventory
+        
+        // Update UI and floating brick state
+        updateInventoryDisplay();
+        floatingBrick = null;
+      } else if (selectedBrick === null) {
+        alert("Please select a brick from your inventory.");
+      }
+    }
+  });
+
+  // Open Purchase Window
+  function openPurchaseWindow() {
+    const modal = document.getElementById('purchase-modal');
+    modal.style.display = 'flex';
+  }
+
+  // Close Purchase Window
+  function closePurchaseWindow() {
+    const modal = document.getElementById('purchase-modal');
+    modal.style.display = 'none';
+  }
+
+  // Purchase brick function
+  function purchaseBrick(index) {
+    if (hashBalance >= brickTypes[index].cost) {
+      inventory.push(index); // Add brick to inventory
+      hashBalance -= brickTypes[index].cost; // Deduct HASH from balance
+      updateInventoryDisplay(); // Update inventory UI
+      updateHashDisplay(); // Update HASH balance display
+    } else {
+      alert("Not enough HASH to purchase this brick.");
+    }
+  }
+
+  // Display inventory
+  function updateInventoryDisplay() {
+    const inventoryDiv = document.getElementById('inventory');
+    inventoryDiv.innerHTML = ''; // Clear current inventory display
+    inventory.forEach((brickIndex, i) => {
+      const item = document.createElement('div');
+      item.classList.add('inventory-item');
+      item.classList.toggle('selected', brickIndex === selectedBrick);
+      item.onclick = () => selectBrick(brickIndex);
+
+      const img = document.createElement('img');
+      img.src = brickTypes[brickIndex].icon;
+      item.appendChild(img);
+      inventoryDiv.appendChild(item);
+    });
+  }
+// Function to reset the state
+function resetState() {
+  placedBricks = [];  // Clear the array of placed bricks
+  console.log("State reset: placedBricks array cleared.");
+}
+  // Select a brick from the inventory
+  function selectBrick(index) {
+    selectedBrick = index;
+    if (floatingBrick) {
+      scene.remove(floatingBrick);
+    }
+    floatingBrick = createBrick(index); // Create the brick for placing
+  }
+
+  // Update HASH display
+  function updateHashDisplay() {
+    document.getElementById('hash-display').textContent = `HASH: ${hashBalance}`;
+  }
+
+  // Initial UI
+  const ui = document.createElement('div');
+  ui.classList.add('ui');
+
+  const purchaseButton = document.createElement('div');
+  purchaseButton.classList.add('button');
+  purchaseButton.textContent = "Open Purchase Menu";
+  purchaseButton.onclick = openPurchaseWindow;
+  ui.appendChild(purchaseButton);
+
+  const inventoryDiv = document.createElement('div');
+  inventoryDiv.id = 'inventory';
+  inventoryDiv.classList.add("inventory");
+  ui.appendChild(inventoryDiv);
+
+  const hashDisplay = document.createElement('div');
+  hashDisplay.id = 'hash-display';
+  hashDisplay.textContent = `HASH: ${hashBalance}`;
+  ui.appendChild(hashDisplay);
+
+  document.body.appendChild(ui);
+
+  // Create Purchase Modal
+  const modal = document.createElement("div");
+  modal.id = "purchase-modal";
+  modal.classList.add("modal");
+
+  const modalContent = document.createElement("div");
+  modalContent.classList.add("modal-content");
+  modalContent.innerHTML = "<h2>Select a Brick</h2>";
+
+  brickTypes.forEach((brick, index) => {
+    const button = document.createElement("div");
+    button.classList.add("button");
+    button.textContent = `${brick.name} (Cost: ${brick.cost} HASH)`;
+    button.onclick = () => purchaseBrick(index); // Purchase the brick
+    modalContent.appendChild(button);
+  });
+
+  const closeButton = document.createElement("div");
+  closeButton.classList.add("button");
+  closeButton.textContent = "Close";
+  closeButton.onclick = closePurchaseWindow;
+  modalContent.appendChild(closeButton);
+
+  modal.appendChild(modalContent);
+  document.body.appendChild(modal);
+
+  // Camera setup with OrbitControls
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  camera.position.set(5, 5, 5);
+  camera.lookAt(0, 0, 0);
+
+  // Animation Loop
+  function animate() {
+    requestAnimationFrame(animate);
+    updateFloatingBrick(); // Update floating brick position
+    controls.update(); // Update controls
+    renderer.render(scene, camera);
+  }
+
+  // Start the animation loop
+  animate();
+
+  // Resize handling
+  window.addEventListener('resize', function () {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  });
+</script>
+
+</body>
+</html>
