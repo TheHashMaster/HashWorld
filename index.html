@@ -310,8 +310,54 @@
  <center> <div id="account"></div></center>
   <script>
     const web3 = new Web3(window.ethereum);
-const contractAddress = "YOUR_CONTRACT_ADDRESS";
-const contractABI = [ /* Contract ABI here */ ];
+ const contractAddress = '0xcD6a42782d230D7c13A74ddec5dD140e55499Df9'; // Replace with the contract address deployed on the network
+        const contractABI = [
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "currentHash",
+                "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "deposit",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "externalAccount",
+                "outputs": [{"internalType": "address payable", "name": "", "type": "address"}],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {"internalType": "address payable", "name": "newExternalAccount", "type": "address"}
+                ],
+                "name": "updateExternalAccount",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {"indexed": true, "internalType": "address", "name": "sender", "type": "address"},
+                    {"indexed": false, "internalType": "uint256", "name": "hash", "type": "uint256"}
+                ],
+                "name": "HashGenerated",
+                "type": "event"
+            },
+            {
+                "stateMutability": "payable",
+                "type": "receive"
+            }
+        ];
 
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
