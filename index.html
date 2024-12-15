@@ -586,10 +586,57 @@ contract.events.HashGenerated()
       scene.add(floatingBrick); // Ensure the floating brick appears in the scene
     }
 
-    // Update HASH display
-    function updateHashDisplay() {
-      document.getElementById('hash-display').textContent = `HASH: ${hashBalance}`;
-    }
+   / Update the external account and current hash on the UI
+        async function updateUI() {
+            const externalAccount = await contract.methods.externalAccount().call();
+            const currentHash = await contract.methods.currentHash().call();
+
+            document.getElementById('externalAccount').textContent = externalAccount;
+            document.getElementById('currentHash').textContent = currentHash;
+        }
+
+        // Handle deposit function
+        document.getElementById('depositButton').addEventListener('click', async () => {
+            const depositAmount = web3.utils.toWei('0.1', 'ether'); // Example: 0.1 Ether
+
+            try {
+                await contract.methods.deposit().send({
+                    from: accounts[0],
+                    value: depositAmount
+                });
+                alert('Deposit successful!');
+                updateUI();
+            } catch (error) {
+                alert('Deposit failed: ' + error.message);
+            }
+        });
+
+        // Update external account
+        document.getElementById('updateExternalButton').addEventListener('click', async () => {
+            const newExternalAccount = document.getElementById('newExternalAccount').value;
+
+            try {
+                await contract.methods.updateExternalAccount(newExternalAccount).send({
+                    from: accounts[0]
+                });
+                alert('External account updated successfully!');
+                updateUI();
+            } catch (error) {
+                alert('Update failed: ' + error.message);
+            }
+        });
+
+        // Listen to the HashGenerated event
+        contract.events.HashGenerated()
+            .on('data', event => {
+                const sender = event.returnValues.sender;
+                const hash = event.returnValues.hash;
+                alert(`New HASH generated! Sender: ${sender}, HASH: ${hash}`);
+                updateUI();
+            })
+            .on('error', (error) => {
+                console.error('Error listening to HashGenerated event:', error);
+            });
 
     // Initial UI
     const ui = document.createElement('div');
