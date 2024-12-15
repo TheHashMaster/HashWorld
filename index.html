@@ -309,6 +309,21 @@
 <div><center><button id="connectButton">Connect Web3</button></center></div>
  <center> <div id="account"></div></center>
   <script>
+    const web3 = new Web3(window.ethereum);
+const contractAddress = "YOUR_CONTRACT_ADDRESS";
+const contractABI = [ /* Contract ABI here */ ];
+
+const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+// Listening for the HashGenerated event
+contract.events.HashGenerated()
+  .on('data', (event) => {
+    const { sender, hash } = event.returnValues;
+    console.log(`New HASH generated: ${hash} from ${sender}`);
+    // Update your game's state/UI here with the new HASH
+  })
+  .on('error', console.error);
+
     let hashBalance = 1000000; // Starting HASH balance
     let inventory = []; // User's inventory to store purchased bricks
     let selectedBrick = null; // Selected brick for placement
