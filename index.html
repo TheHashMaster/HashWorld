@@ -270,11 +270,20 @@
     }
 
     /* Media Queries */
-    @media (max-width: 768px) {
-      .store-inventory {
-        flex-direction: column;
-        gap: 30px;
-      }
+     /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .modal {
+      width: 80%;
+    }
+
+    #connectButton {
+      font-size: 16px;
+    }
+
+    #account {
+      font-size: 14px;
+    }
+
       .store, .inventory {
         width: 100%;
       }
