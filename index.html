@@ -213,21 +213,25 @@
       font-size: 20px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     }
- #connectButton:hover {
-    background-color: #45a049; /* Darker green when hovered */
-    transform: scale(1.05); /* Slightly scale the button on hover */
+  #connectButton:hover {
+    background-color: #45a049; /* Darker green on hover */
+    transform: scale(1.05); /* Slight scaling effect */
   }
 
   #connectButton:active {
-    transform: scale(1); /* Remove scaling when clicked */
+    transform: scale(1); /* Reset scaling when clicked */
   }
 
-  /* Wallet account display */
+  /* Account information display (modal-like styling) */
   #account {
-    margin-top: 20px;
-    font-size: 18px;
-    font-weight: bold;
+    background-color: #444;
     color: #f1f1f1;
+    font-size: 16px;
+    padding: 15px;
+    border-radius: 8px;
+    width: 100%;
+    word-wrap: break-word;
+    margin-bottom: 20px; /* Spacing between elements */
   }
     .hash-display span {
       font-weight: bold;
