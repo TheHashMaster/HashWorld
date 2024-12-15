@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web3 Game with 3D Scene</title>
   <!-- External scripts -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
@@ -61,9 +64,18 @@
     .btn-container {
       margin-top: 30px;
     }
+
+    /* Make sure Three.js canvas takes the full screen */
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
   </style>
 </head>
-
 <body>
   <!-- Start Screen -->
   <div class="start-screen" id="start-screen">
@@ -188,7 +200,7 @@
       }, 1000);
     }
 
-    // Camera and scene setup (unchanged from your existing code)
+    // Camera and scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
@@ -199,7 +211,7 @@
     camera.position.set(5, 5, 5);
     camera.lookAt(0, 0, 0);
 
-    // Animation loop (unchanged from your existing code)
+    // Animation loop
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
@@ -208,7 +220,7 @@
 
     animate();
 
-    // Resize handling (unchanged from your existing code)
+    // Resize handling
     window.addEventListener('resize', function () {
       renderer.setSize(window.innerWidth, window.innerHeight);
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -216,3 +228,4 @@
     });
   </script>
 </body>
+</html>
