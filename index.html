@@ -213,25 +213,21 @@
       font-size: 20px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     }
-  #connectButton:hover {
-    background-color: #45a049; /* Darker green on hover */
-    transform: scale(1.05); /* Slight scaling effect */
+ #connectButton:hover {
+    background-color: #45a049; /* Darker green when hovered */
+    transform: scale(1.05); /* Slightly scale the button on hover */
   }
 
   #connectButton:active {
-    transform: scale(1); /* Reset scaling when clicked */
+    transform: scale(1); /* Remove scaling when clicked */
   }
 
-  /* Account information display (modal-like styling) */
+  /* Wallet account display */
   #account {
-    background-color: #444;
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
     color: #f1f1f1;
-    font-size: 16px;
-    padding: 15px;
-    border-radius: 8px;
-    width: 100%;
-    word-wrap: break-word;
-    margin-bottom: 20px; /* Spacing between elements */
   }
     .hash-display span {
       font-weight: bold;
@@ -270,20 +266,11 @@
     }
 
     /* Media Queries */
-     /* Responsive adjustments */
-  @media (max-width: 600px) {
-    .modal {
-      width: 80%;
-    }
-
-    #connectButton {
-      font-size: 16px;
-    }
-
-    #account {
-      font-size: 14px;
-    }
-
+    @media (max-width: 768px) {
+      .store-inventory {
+        flex-direction: column;
+        gap: 30px;
+      }
       .store, .inventory {
         width: 100%;
       }
@@ -305,22 +292,11 @@
     <p>Build your world and have fun!</p>
     <button class="start-button" onclick="startGame()">Start Game</button>
 
-  </div><br><br><br>
+  </div>
+
 <div><center><button id="connectButton">Connect Web3</button></center></div>
  <center> <div id="account"></div></center>
   <script>
-    const web3 = new Web3(window.ethereum);
-const contractAddress = "YOUR_CONTRACT_ADDRESS";
-const contractABI = [ /* Contract ABI here */ ];
-const contract = new web3.eth.Contract(contractABI, contractAddress);
-// Listening for the HashGenerated event
-contract.events.HashGenerated()
-  .on('data', (event) => {
-    const { sender, hash } = event.returnValues;
-    console.log(`New HASH generated: ${hash} from ${sender}`);
-    // Update your game's state/UI here with the new HASH
-  })
-  .on('error', console.error);
     let hashBalance = 1000000; // Starting HASH balance
     let inventory = []; // User's inventory to store purchased bricks
     let selectedBrick = null; // Selected brick for placement
