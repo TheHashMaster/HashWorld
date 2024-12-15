@@ -213,7 +213,22 @@
       font-size: 20px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     }
+ #connectButton:hover {
+    background-color: #45a049; /* Darker green when hovered */
+    transform: scale(1.05); /* Slightly scale the button on hover */
+  }
 
+  #connectButton:active {
+    transform: scale(1); /* Remove scaling when clicked */
+  }
+
+  /* Wallet account display */
+  #account {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #f1f1f1;
+  }
     .hash-display span {
       font-weight: bold;
     }
